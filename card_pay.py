@@ -2,7 +2,7 @@ import pyautogui as pg
 import time
 from get_location import *
 
-def card_pay():
+def card_pay(finish):
     # 다른결제 선택
     pg.click(938, 354)
     time.sleep(1)
@@ -108,7 +108,8 @@ def card_pay():
 
     # 결제요청 클릭
     time.sleep(2)
-    # pg.click(1110, 742)
+    if finish:
+        pg.click(1110, 742)
 
 if __name__ == "__main__":
     time.sleep(3)

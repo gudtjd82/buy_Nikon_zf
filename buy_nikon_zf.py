@@ -13,7 +13,10 @@ from accept_alert import *
 from card_pay import *
 from find_matchOP import *
 
-def main(device_check):
+def buy_nikon_zf(device_check):
+
+    finish = False
+
     options = webdriver.ChromeOptions()
     options.add_experimental_option("detach", True)
     driver = webdriver.Chrome(options=options)
@@ -42,11 +45,11 @@ def main(device_check):
 
     # 구매 페이지 접속
     # zf
-    # url = 'https://eshop.nikon-image.co.kr/product/NK0003142'
+    url = 'https://eshop.nikon-image.co.kr/product/NK0003142'
     # z6
     # url = 'https://eshop.nikon-image.co.kr/product/NK0002937'
     # z5
-    url = 'https://eshop.nikon-image.co.kr/product/NK0003111'
+    # url = 'https://eshop.nikon-image.co.kr/product/NK0003111'
     # zfc
     # url = 'https://eshop.nikon-image.co.kr/product/NK0002988'
 
@@ -55,69 +58,20 @@ def main(device_check):
     # 옵션 선택
     target_option_colors = list([1, 2, 3, 4])
     # 임시
-    target_option_colors[1] = '24-200'
-    target_option_colors[2] = 'body'
-    target_option_colors[3] = '24-70'
-    target_option_kit = 'kit'
+    # target_option_colors[1] = '24-200'
+    # target_option_colors[2] = 'body'
+    # target_option_colors[3] = '24-70'
+    # target_option_kit = 'kit'
     # 실제 사용
-    # target_option_colors[1] = 'black'
-    # target_option_colors[2] = 'brown'
-    # target_option_colors[3] = 'green'
-    # target_option_kit = 'se'
+    target_option_colors[1] = 'black'
+    target_option_colors[2] = 'brown'
+    target_option_colors[3] = 'green'
+    target_option_kit = 'se'
     matching_option = list()
-    nonMatching_a = list()
-    nonMatching_b = list()
     nonMatching_option = list()
-    matching_color = dict()
-    matching_kit = dict()
 
     # 우선 순위(color, kit): (black, O) > (black, X) > (brown, O) > (green, O) > (brown, X) > (green, X)
     matching_option, nonMatching_option = find_matchOP(driver, target_option_colors, target_option_kit)
-    sel_elem = driver.find_element(By.ID, 'relation_sel')
-    option_elems = sel_elem.find_elements(By.TAG_NAME, 'option')
-    i = 0
-    for option in option_elems:
-        if i == 0:
-            i += 1
-            continue
-        if target_option_color_1 in option.text.lower():
-            if target_option_kit in option.text.lower():
-                matching_kit[target_option_color_1] = option
-                continue
-            matching_color[target_option_color_1] = option
-
-        elif target_option_color_2 in option.text.lower():
-            if target_option_kit in option.text.lower():
-                matching_kit[target_option_color_2] = option
-                continue
-            matching_color[target_option_color_2] = option
-            
-        elif target_option_color_3 in option.text.lower():
-            if target_option_kit in option.text.lower():
-                matching_kit[target_option_color_3] = option
-                continue
-            matching_color[target_option_color_3] = option
-
-        elif target_option_kit in option.text.lower():
-            nonMatching_a.append(option)
-
-        else:
-            nonMatching_b.append(option)
-
-    nonMatching_option = nonMatching_a + nonMatching_b
-
-    if target_option_color_1 in matching_kit:
-        matching_option.append(matching_kit[target_option_color_1])       # (black, O)
-    if target_option_color_1 in matching_color:
-        matching_option.append(matching_color[target_option_color_1])     # (black, X)
-    if target_option_color_2 in matching_kit:
-        matching_option.append(matching_kit[target_option_color_2])       # (brown, O)
-    if target_option_color_3 in matching_kit:
-        matching_option.append(matching_kit[target_option_color_3])       # (green, O)
-    if target_option_color_2 in matching_color:
-        matching_option.append(matching_color[target_option_color_2])     # (brown, X)
-    if target_option_color_3 in matching_color:
-        matching_option.append(matching_color[target_option_color_3])     # (green, X)
     
     print("-------Matching Option---------")
     for option in matching_option:
@@ -131,36 +85,16 @@ def main(device_check):
     buy_click = False
     buy_button = None
     # matching_option 클릭
+    i = 0
     if len(matching_option) > 0:
-        for option in matching_option:
-            option.click()
-            driver.implicitly_wait(5)
-            buy_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[1]/div[3]/div[2]/div[3]/div[3]')
-            if buy_button.text == '일시품절':
-                buy_button = None
-                continue
-            elif buy_button.text == '구매하기':
-                print("구매하기 클릭")
-                buy_button.click()
-                accept_alert(driver)
-                buy_click = True
-                break
-            else:
-                try:
-                    buy_button.click()
-                    accept_alert(driver)
-                except:
-                    buy_button = None
-                    continue
-    
-    # nonMatching_option 클릭
-    if not buy_click or len(matching_option) == 0:
-        if len(nonMatching_option) > 0:
-            for option in nonMatching_option:
+        for i in range(0, len(matching_option)):
+            if len(matching_option) > 0:
+                option = matching_option[i]
                 option.click()
                 driver.implicitly_wait(5)
                 buy_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[1]/div[3]/div[2]/div[3]/div[3]')
                 if buy_button.text == '일시품절':
+                    matching_option, nonMatching_option = find_matchOP(driver, target_option_colors, target_option_kit)
                     buy_button = None
                     continue
                 elif buy_button.text == '구매하기':
@@ -173,14 +107,47 @@ def main(device_check):
                     try:
                         buy_button.click()
                         accept_alert(driver)
+                        break
                     except:
                         buy_button = None
+                        matching_option, nonMatching_option = find_matchOP(driver, target_option_colors, target_option_kit)
                         continue
+    
+    # nonMatching_option 클릭
+    j = 0
+    if not buy_click or len(matching_option) <= 0:
+        if len(nonMatching_option) > 0:
+            for j in range(0, len(nonMatching_option)):
+                if len(nonMatching_option) > 0:
+                    option = nonMatching_option[j]
+                    option.click()
+                    driver.implicitly_wait(5)
+                    buy_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[1]/div[3]/div[2]/div[3]/div[3]')
+                    if buy_button.text == '일시품절':
+                        matching_option, nonMatching_option = find_matchOP(driver, target_option_colors, target_option_kit)
+                        buy_button = None
+                        continue
+                    elif buy_button.text == '구매하기':
+                        print("구매하기 클릭")
+                        buy_button.click()
+                        accept_alert(driver)
+                        buy_click = True
+                        break
+                    else:
+                        try:
+                            buy_button.click()
+                            accept_alert(driver)
+                            break
+                        except:
+                            buy_button = None
+                            matching_option, nonMatching_option = find_matchOP(driver, target_option_colors, target_option_kit)
+                            continue
     if not buy_click:
+        print("구매 가능한 option이 없습니다.")
         buy_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[1]/div[3]/div[2]/div[3]/div[3]')
         try:
-            print("구매하기 클릭")
             buy_button.click()
+            print("구매하기 클릭")
             accept_alert(driver)
         except:
             buy_button = None
@@ -292,9 +259,9 @@ def main(device_check):
         pg.click(1111, 727)
         time.sleep(1)
 
-        card_pay()
+        card_pay(finish)
 
 if __name__ == "__main__":
     device_check = input("Desktop(1) or Laptop(2)? : ")
-    main(device_check)
+    buy_nikon_zf(device_check)
 
